@@ -15,6 +15,7 @@ import com.example.biblio.ui.viewmodel.MainViewModel
 fun BookInfoScreen(viewModel: MainViewModel = viewModel()) {
     var isbn by remember { mutableStateOf("") }
     val book by viewModel.book
+    val message by viewModel.message
 
     Column(
         modifier = Modifier
@@ -39,26 +40,40 @@ fun BookInfoScreen(viewModel: MainViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Mostrar detalles del libro si existen
         book?.let {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                elevation = CardDefaults.cardElevation(8.dp)
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Título
                     Text(
                         text = it.title,
                         style = MaterialTheme.typography.headlineSmall,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
+
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-                    BookDetailRow(label = "Autor(es):", detail = it.authors.joinToString(", "))
-                    BookDetailRow(label = "Fecha de publicación:", detail = it.publish_date ?: "No disponible")
+                    // Autor
+                    BookDetailRow(
+                        label = "Autor(es):",
+                        detail = it.authors.joinToString(", ")
+                    )
+
+                    // Fecha de publicación
+                    BookDetailRow(
+                        label = "Fecha de publicación:",
+                        detail = it.publish_date ?: "No disponible"
+                    )
                 }
             }
         } ?: Text(
@@ -87,3 +102,4 @@ fun BookDetailRow(label: String, detail: String) {
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
+

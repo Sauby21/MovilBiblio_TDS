@@ -19,25 +19,27 @@ class DataRepository(context: Context) {
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.query(
             DatabaseModel.TABLE_NAME,
-            arrayOf(DatabaseModel.COL_TITLE, DatabaseModel.COL_AUTHOR, DatabaseModel.COL_STOCK, DatabaseModel.COL_ISBN),
+            arrayOf(DatabaseModel.COL_ID, DatabaseModel.COL_TITLE, DatabaseModel.COL_AUTHOR, DatabaseModel.COL_STOCK, DatabaseModel.COL_ISBN),
             null, null, null, null, null
         )
 
         val books = mutableListOf<Data>()
         while (cursor.moveToNext()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseModel.COL_ID))
             val title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_TITLE))
             val author = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_AUTHOR))
             val stock = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_STOCK))
             val isbn = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_ISBN))
-            books.add(Data(title, author, stock, isbn))
+            books.add(Data(id, title, author, stock, isbn))
         }
         cursor.close()
         db.close()
         return books
     }
 
+
     // Método para actualizar datos
-    fun updateData(isbn: String, title: String, author: String, stock: String): Int {
+    fun updateData(id: Int, title: String, author: String, stock: String): Int {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseModel.COL_TITLE, title)
@@ -47,18 +49,18 @@ class DataRepository(context: Context) {
         val rowsUpdated = db.update(
             DatabaseModel.TABLE_NAME,
             values,
-            "${DatabaseModel.COL_ISBN}=?",
-            arrayOf(isbn)
+            "${DatabaseModel.COL_ID}=?",
+            arrayOf(id.toString())
         )
         db.close()
-        Log.d("DataRepository", "Update result: $rowsUpdated")
         return rowsUpdated
     }
 
+
     // Método para eliminar datos
-    fun deleteData(isbn: String): Int {
+    fun deleteData(id: Int): Int {
         val db = dbHelper.writableDatabase
-        val rowsDeleted = db.delete(DatabaseModel.TABLE_NAME, "${DatabaseModel.COL_ISBN}=?", arrayOf(isbn))
+        val rowsDeleted = db.delete(DatabaseModel.TABLE_NAME, "${DatabaseModel.COL_ID}=?", arrayOf(id.toString()))
         db.close()
         return rowsDeleted
     }
@@ -82,7 +84,7 @@ class DataRepository(context: Context) {
         val db = dbHelper.readableDatabase
         val cursor = db.query(
             DatabaseModel.TABLE_NAME,
-            arrayOf(DatabaseModel.COL_TITLE, DatabaseModel.COL_AUTHOR, DatabaseModel.COL_STOCK, DatabaseModel.COL_ISBN),
+            arrayOf(DatabaseModel.COL_ID, DatabaseModel.COL_TITLE, DatabaseModel.COL_AUTHOR, DatabaseModel.COL_STOCK, DatabaseModel.COL_ISBN),
             "${DatabaseModel.COL_ISBN} = ?",
             arrayOf(isbn),
             null,
@@ -92,18 +94,44 @@ class DataRepository(context: Context) {
 
         var data: Data? = null
         if (cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseModel.COL_ID))
             val title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_TITLE))
             val author = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_AUTHOR))
             val stock = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_STOCK))
             val retrievedIsbn = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_ISBN))
-            data = Data(title, author, stock, retrievedIsbn)
+            data = Data(id, title, author, stock, retrievedIsbn)
         }
 
         cursor.close()
         db.close()
-        Log.d("DataRepository", "Data retrieved: $data")
         return data
     }
+    // DataRepository.kt
+    fun getDataById(id: Int): Data? {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(
+            DatabaseModel.TABLE_NAME,
+            arrayOf(DatabaseModel.COL_ID, DatabaseModel.COL_TITLE, DatabaseModel.COL_AUTHOR, DatabaseModel.COL_STOCK, DatabaseModel.COL_ISBN),
+            "${DatabaseModel.COL_ID} = ?",
+            arrayOf(id.toString()),
+            null, null, null
+        )
+
+        var data: Data? = null
+        if (cursor.moveToFirst()) {
+            val title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_TITLE))
+            val author = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_AUTHOR))
+            val stock = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_STOCK))
+            val isbn = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_ISBN))
+            data = Data(id, title, author, stock, isbn)
+        }
+
+        cursor.close()
+        db.close()
+        return data
+    }
+
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://databookpy.onrender.com/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -113,10 +141,19 @@ class DataRepository(context: Context) {
 
     suspend fun fetchBookByIsbn(isbn: String): Book? {
         return try {
-            apiService.getBookByIsbn(isbn)
+            Log.d("DataRepository", "Requesting book with ISBN: $isbn")
+            val response = apiService.getBookByIsbn(isbn)
+            if (response != null) {
+                Log.d("DataRepository", "Book found: ${response.title}")
+                response
+            } else {
+                Log.d("DataRepository", "No book found for ISBN: $isbn")
+                null
+            }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("DataRepository", "Error fetching book by ISBN: $isbn", e)
             null
         }
     }
+
 }
