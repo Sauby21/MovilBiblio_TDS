@@ -2,12 +2,35 @@ package com.example.biblio.data.repository
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.util.Log
 import com.example.data.model.DatabaseModel
 import com.example.biblio.domain.Data
 
 class DataRepository(context: Context) {
     private val dbHelper = DatabaseModel(context)
+
+    // Método para obtener todos los libros
+    fun getAllBooks(): List<Data> {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(
+            DatabaseModel.TABLE_NAME,
+            arrayOf(DatabaseModel.COL_TITLE, DatabaseModel.COL_AUTHOR, DatabaseModel.COL_STOCK, DatabaseModel.COL_ISBN),
+            null, null, null, null, null
+        )
+
+        val books = mutableListOf<Data>()
+        while (cursor.moveToNext()) {
+            val title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_TITLE))
+            val author = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_AUTHOR))
+            val stock = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_STOCK))
+            val isbn = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseModel.COL_ISBN))
+            books.add(Data(title, author, stock, isbn))
+        }
+        cursor.close()
+        db.close()
+        return books
+    }
 
     // Método para actualizar datos
     fun updateData(isbn: String, title: String, author: String, stock: String): Int {

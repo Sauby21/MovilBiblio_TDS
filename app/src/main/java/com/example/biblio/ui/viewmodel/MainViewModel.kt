@@ -1,9 +1,12 @@
 package com.example.biblio.ui.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.biblio.domain.Data
+import com.example.biblio.domain.GetAllBooksUseCase
 import com.example.biblio.domain.ReadDataUseCase
 import com.example.domain.DeleteDataUseCase
 import com.example.domain.InsertDataUseCase
@@ -14,12 +17,23 @@ class MainViewModel(
     private val insertDataUseCase: InsertDataUseCase,
     private val updateDataUseCase: UpdateDataUseCase,
     private val deleteDataUseCase: DeleteDataUseCase,
-    private val readDataUseCase: ReadDataUseCase
+    private val readDataUseCase: ReadDataUseCase,
+    private val getAllBooksUseCase: GetAllBooksUseCase
 ) : ViewModel() {
     var title = mutableStateOf("")
     var author = mutableStateOf("")
     var stock = mutableStateOf("")
     var isbn = mutableStateOf("")
+    var books = mutableStateListOf<Data>()
+
+    fun fetchAllBooks() {
+        viewModelScope.launch {
+            books.clear()
+            val allBooks = getAllBooksUseCase()
+            books.addAll(allBooks)
+            Log.d("MainViewModel", "Fetched books: $allBooks")
+        }
+    }
 
     fun insertData() {
         viewModelScope.launch {
@@ -59,4 +73,6 @@ class MainViewModel(
             Log.d("MainViewModel", "Update result: $result")
         }
     }
+
+
 }

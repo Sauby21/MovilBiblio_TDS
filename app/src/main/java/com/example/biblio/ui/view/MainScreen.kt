@@ -4,15 +4,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.biblio.ui.viewmodel.MainViewModel
 
 @Composable
-fun MainScreen(viewModel: MainViewModel = viewModel()) {
+fun MainScreen(navController: NavHostController, viewModel: MainViewModel = viewModel()) {
     val title by viewModel.title
     val author by viewModel.author
     val stock by viewModel.stock
@@ -71,6 +71,11 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
         CustomButton(
             text = "Delete",
             onClick = { viewModel.deleteData() }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        CustomButton(
+            text = "View Book List",
+            onClick = { navController.navigate("book_list") }
         )
     }
 }
