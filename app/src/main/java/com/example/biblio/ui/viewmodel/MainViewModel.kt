@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.biblio.data.repository.DataRepository
+import com.example.biblio.domain.Book
 import com.example.biblio.domain.Data
 import com.example.biblio.domain.GetAllBooksUseCase
 import com.example.biblio.domain.ReadDataUseCase
@@ -18,13 +20,22 @@ class MainViewModel(
     private val updateDataUseCase: UpdateDataUseCase,
     private val deleteDataUseCase: DeleteDataUseCase,
     private val readDataUseCase: ReadDataUseCase,
-    private val getAllBooksUseCase: GetAllBooksUseCase
+    private val getAllBooksUseCase: GetAllBooksUseCase,
+    private val repository: DataRepository
 ) : ViewModel() {
     var title = mutableStateOf("")
     var author = mutableStateOf("")
     var stock = mutableStateOf("")
     var isbn = mutableStateOf("")
     var books = mutableStateListOf<Data>()
+    val book = mutableStateOf<Book?>(null)
+
+    fun fetchBookByIsbn(isbn: String) {
+        viewModelScope.launch {
+            val result = repository.fetchBookByIsbn(isbn)
+            book.value = result
+        }
+    }
 
     fun fetchAllBooks() {
         viewModelScope.launch {

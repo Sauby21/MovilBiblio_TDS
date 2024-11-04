@@ -1,11 +1,15 @@
 package com.example.biblio.data.repository
 
+import com.example.biblio.domain.Book
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.util.Log
 import com.example.data.model.DatabaseModel
 import com.example.biblio.domain.Data
+import com.example.biblio.network.DatabookpyApiService
 
 class DataRepository(context: Context) {
     private val dbHelper = DatabaseModel(context)
@@ -99,5 +103,20 @@ class DataRepository(context: Context) {
         db.close()
         Log.d("DataRepository", "Data retrieved: $data")
         return data
+    }
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://databookpy.onrender.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val apiService = retrofit.create(DatabookpyApiService::class.java)
+
+    suspend fun fetchBookByIsbn(isbn: String): Book? {
+        return try {
+            apiService.getBookByIsbn(isbn)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }

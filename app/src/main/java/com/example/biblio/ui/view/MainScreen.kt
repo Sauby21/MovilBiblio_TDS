@@ -52,7 +52,7 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel = view
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Buttons
+        // Buttons for CRUD operations
         CustomButton(
             text = "Insert",
             onClick = { viewModel.insertData() }
@@ -77,9 +77,15 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel = view
             text = "View Book List",
             onClick = { navController.navigate("book_list") }
         )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // New button to navigate to BookInfoScreen
+        CustomButton(
+            text = "Search Book by ISBN",
+            onClick = { navController.navigate("bookInfo") }
+        )
     }
 }
-
 @Composable
 fun CustomTextField(value: String, onValueChange: (String) -> Unit, label: String) {
     TextField(

@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import com.example.biblio.data.repository.DataRepository
 import com.example.biblio.domain.GetAllBooksUseCase
 import com.example.biblio.domain.ReadDataUseCase
+import com.example.biblio.ui.view.BookInfoScreen
 import com.example.domain.DeleteDataUseCase
 import com.example.domain.InsertDataUseCase
 import com.example.domain.UpdateDataUseCase
@@ -35,7 +36,8 @@ class MainActivity : ComponentActivity() {
             updateDataUseCase,
             deleteDataUseCase,
             readDataUseCase,
-            getAllBooksUseCase
+            getAllBooksUseCase,
+            repository
         )
 
         setContent {
@@ -52,5 +54,6 @@ fun AppNavigation(navController: NavHostController, viewModel: MainViewModel) {
     NavHost(navController = navController, startDestination = "main") {
         composable("main") { MainScreen(navController, viewModel) }
         composable("book_list") { BookListScreen(viewModel) }
+        composable("bookInfo") { BookInfoScreen(viewModel) }
     }
 }
